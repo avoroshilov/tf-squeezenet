@@ -11,6 +11,7 @@ Originally, this SqueezeNet was implemented for style transfer, see the original
 The style transfer version contains pretrained weights with classifier chopped off, resulting in even smaller file (<3MB).
 
 ## Dependencies
+* [SqueezeNet github](https://github.com/DeepScale/SqueezeNet)
 * [TensorFlow](https://www.tensorflow.org/versions/master/get_started/os_setup.html#download-and-setup)
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
