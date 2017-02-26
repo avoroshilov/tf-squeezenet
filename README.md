@@ -1,5 +1,5 @@
 # tf-squeezenet
-TensorFlow version of [SqueezeNet][sqz_arxiv] with converted pretrained weights
+TensorFlow version of [SqueezeNet][sqz_arxiv] with converted pretrained weights. [The official github][SqueezeNet_github] of SqueezeNet creators has some information on [SqueezeNet v1.1][SqueezeNet_v11].
 
 Current implementation is SqueezeNet v 1.1 (signature pool 1/3/5) without bypasses.
 
@@ -11,10 +11,11 @@ Originally, this SqueezeNet was implemented for style transfer, see the original
 The style transfer version contains pretrained weights with classifier chopped off, resulting in even smaller file (<3MB).
 
 ## Dependencies
-* [SqueezeNet github](https://github.com/DeepScale/SqueezeNet)
 * [TensorFlow](https://www.tensorflow.org/versions/master/get_started/os_setup.html#download-and-setup)
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
 
-[sqz_arxiv]: https://arxiv.org/pdf/1602.07360.pdf
+[sqz_arxiv]: https://arxiv.org/abs/1602.07360
+[SqueezeNet_github]: https://github.com/DeepScale/SqueezeNet
+[SqueezeNet_v11]: https://github.com/DeepScale/SqueezeNet/tree/master/SqueezeNet_v1.1
