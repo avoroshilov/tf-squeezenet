@@ -3,7 +3,7 @@ TensorFlow version of [SqueezeNet][sqz_arxiv] with converted pretrained weights
 
 Current implementation is SqueezeNet v 1.1 (signature pool 1/3/5) without bypasses.
 
-synset_words.txt file is a copt from either caffe or torch tutorials.
+synset_words.txt file is a copy from either caffe or torch tutorials.
 
 Model weights are converted from keras HDF5 model file from https://github.com/rcmalli/keras-squeezenet
 
