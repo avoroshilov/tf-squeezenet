@@ -7,11 +7,12 @@ import scipy.io
 import time
 
 def imread_resize(path):
-    img = scipy.misc.imresize(scipy.misc.imread(path), (227, 227)).astype(np.float)
+    img_orig = scipy.misc.imread(path)
+    img = scipy.misc.imresize(img_orig, (227, 227)).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
-    return img
+    return img, img_orig.shape
 
 def get_dtype_np():
     return np.float32
@@ -167,12 +168,20 @@ def _pool_layer(net, name, input, pooling, size=(2, 2), stride=(3, 3), padding='
                 padding=padding)
     net[name] = x
     return x
-   
+
+def build_parser():
+    ps = ArgumentParser()
+    ps.add_argument('--in',             dest='input', help='input file', metavar='INPUT', required=True)
+    return ps
+
 def main():
     import time
 
+    parser = build_parser()
+    options = parser.parse_args()
+
     # Loading image
-    img_content = imread_resize("test.jpg")
+    img_content, orig_shape = imread_resize(options.input)
     img_content_shape = (1,) + img_content.shape
 
     # Loading ImageNet classes info
