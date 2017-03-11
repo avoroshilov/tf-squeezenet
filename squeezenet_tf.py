@@ -6,6 +6,8 @@ import numpy as np
 import scipy.io
 import time
 
+from PIL import Image
+
 from argparse import ArgumentParser
 
 def imread_resize(path):
@@ -16,6 +18,10 @@ def imread_resize(path):
         img = np.dstack((img,img,img))
     return img, img_orig.shape
 
+def imsave(path, img):
+    img = np.clip(img, 0, 255).astype(np.uint8)
+    Image.fromarray(img).save(path, quality=95)
+    
 def get_dtype_np():
     return np.float32
 
@@ -174,6 +180,7 @@ def _pool_layer(net, name, input, pooling, size=(2, 2), stride=(3, 3), padding='
 def build_parser():
     ps = ArgumentParser()
     ps.add_argument('--in',             dest='input', help='input file', metavar='INPUT', required=True)
+    ps.add_argument('--fool',           dest='fool', type=int, help='if image needs to be altered to fool the network classification (argument - class number)', metavar='FOOL')
     return ps
 
 def main():
@@ -199,6 +206,8 @@ def main():
     config.gpu_options.allocator_type = 'BFC'
 
     g = tf.Graph()
+    
+    # 1st pass - simple classification
     with g.as_default(), tf.Session(config=config) as sess:
         # Building network
         image = tf.placeholder(dtype=get_dtype_tf(), shape=img_content_shape, name="image_placeholder")
@@ -211,6 +220,57 @@ def main():
         # Outputting result
         sqz_class = np.argmax(sqznet_results)
         print("\nclass: [%d] '%s' with %5.2f%% confidence" % (sqz_class, classes[sqz_class], sqznet_results[sqz_class] * 100))
+
+    if options.fool is not None:
+        target_class = options.fool
+        if target_class >= 1000 or target_class < 0:
+            target_class = 0
+        print("target class: [%d] '%s' with %5.2f%% confidence\n" % (target_class, classes[target_class], sqznet_results[target_class] * 100))
+
+        iterations = 200
+        
+        # 2nd pass - producing image that fools the classifier
+        with g.as_default(), tf.Session(config=config) as sess:
+            img_preprocess = preprocess(img_content, sqz_mean)
+            image_fooling = tf.Variable(np.expand_dims(img_preprocess, axis=0), dtype=get_dtype_tf())
+            keep_prob = tf.placeholder(get_dtype_tf())
+            sqznet = net_preloaded(data, image_fooling, 'max', True, keep_prob)
+            
+            target = np.empty((1000))
+            target.fill(-1)
+            target[target_class] = 1
+            fooling_loss = tf.nn.l2_loss(tf.constant(target, dtype=tf.float32) - sqznet['classifier_actv'])
+            
+            train_step = tf.train.AdamOptimizer(1e0, 0.9, 0.999, 1e-8).minimize(fooling_loss)
+            
+            sess.run(tf.global_variables_initializer())
+            print('Fooling started..')
+            iter_cnt = 0
+            for i in range(iterations):
+                print('Iteration %4d/%4d, loss: %f' % (iter_cnt, iterations, fooling_loss.eval(feed_dict={keep_prob: 1.})))
+                iter_cnt += 1
+                train_step.run(feed_dict={keep_prob: 1.})
+            
+            fooled = image_fooling.eval()
+            
+            fooled = scipy.misc.imresize(unprocess(fooled.reshape(fooled.shape[1:]), sqz_mean), orig_shape)
+            imsave('sqz_fooling.png', fooled)
+            
+        # 3rd pass - classifying fooling image
+        with g.as_default(), tf.Session(config=config) as sess:
+            fooled_resize = scipy.misc.imresize(fooled, (227, 227))
+        
+            # Building network
+            image = tf.placeholder(dtype=get_dtype_tf(), shape=img_content_shape, name="image_placeholder")
+            keep_prob = tf.placeholder(get_dtype_tf())
+            sqznet = net_preloaded(data, image, 'max', True, keep_prob)
+
+            # Classifying
+            sqznet_results = sqznet['classifier_actv'].eval(feed_dict={image: [preprocess(fooled_resize, sqz_mean)], keep_prob: 1.})[0][0][0]
+
+        sqz_class = np.argmax(sqznet_results)
+        print("\nclass: [%d] '%s' with %5.2f%% confidence" % (sqz_class, classes[sqz_class], sqznet_results[sqz_class] * 100))
+        print("target class: [%d] '%s' with %5.2f%% confidence" % (target_class, classes[target_class], sqznet_results[target_class] * 100))
         
 if __name__ == '__main__':
     main()
