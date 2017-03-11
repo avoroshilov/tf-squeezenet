@@ -45,15 +45,17 @@ def load_net(data_path):
 
 def preprocess(image, mean_pixel):
     swap_img = np.array(image)
-    image[:, :, 0] = swap_img[:, :, 2]
-    image[:, :, 2] = swap_img[:, :, 0]
-    return image - mean_pixel
+    img_out = np.array(swap_img)
+    img_out[:, :, 0] = swap_img[:, :, 2]
+    img_out[:, :, 2] = swap_img[:, :, 0]
+    return img_out - mean_pixel
 
 def unprocess(image, mean_pixel):
-    swap_img = np.array(image)
-    image[:, :, 0] = swap_img[:, :, 2]
-    image[:, :, 2] = swap_img[:, :, 0]
-    return image + mean_pixel
+    swap_img = np.array(image + mean_pixel)
+    img_out = np.array(swap_img)
+    img_out[:, :, 0] = swap_img[:, :, 2]
+    img_out[:, :, 2] = swap_img[:, :, 0]
+    return img_out
 
 def get_weights_biases(preloaded, layer_name):
     weights, biases = preloaded[layer_name]
