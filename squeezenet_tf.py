@@ -252,9 +252,13 @@ def main():
                 train_step.run(feed_dict={keep_prob: 1.})
             
             fooled = image_fooling.eval()
-            
             fooled = scipy.misc.imresize(unprocess(fooled.reshape(fooled.shape[1:]), sqz_mean), orig_shape)
-            imsave('sqz_fooling.png', fooled)
+            
+            path, extension = os.path.splitext(options.input)
+            fooled_filename = path + '_fool.png'
+            
+            print("\nSaving fooling image as '%s'\n" % fooled_filename)
+            imsave(fooled_filename, fooled)
             
         # 3rd pass - classifying fooling image
         with g.as_default(), tf.Session(config=config) as sess:
