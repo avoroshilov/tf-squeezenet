@@ -188,7 +188,7 @@ def main():
     g = tf.Graph()
     with g.as_default(), tf.Session(config=config) as sess:
         # Building network
-        image = tf.placeholder(get_dtype_tf(), shape=img_content_shape)
+        image = tf.placeholder(dtype=get_dtype_tf(), shape=img_content_shape, name="image_placeholder")
         keep_prob = tf.placeholder(get_dtype_tf())
         sqznet = net_preloaded(data, image, 'max', True, keep_prob)
 
@@ -197,7 +197,7 @@ def main():
 
         # Outputting result
         sqz_class = np.argmax(sqznet_results)
-        print("class: [%d] '%s' with %5.2f%% confidence" % (sqz_class, classes[sqz_class], sqznet_results[sqz_class] * 100))
+        print("\nclass: [%d] '%s' with %5.2f%% confidence" % (sqz_class, classes[sqz_class], sqznet_results[sqz_class] * 100))
         
 if __name__ == '__main__':
     main()
