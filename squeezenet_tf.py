@@ -6,6 +6,8 @@ import numpy as np
 import scipy.io
 import time
 
+from argparse import ArgumentParser
+
 def imread_resize(path):
     img_orig = scipy.misc.imread(path)
     img = scipy.misc.imresize(img_orig, (227, 227)).astype(np.float)
@@ -194,7 +196,7 @@ def main():
 
     config = tf.ConfigProto(log_device_placement = False)
     config.gpu_options.allow_growth = True
-    config.gpu_options.allocator_type = 'BFC'        
+    config.gpu_options.allocator_type = 'BFC'
 
     g = tf.Graph()
     with g.as_default(), tf.Session(config=config) as sess:
